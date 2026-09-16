@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AYUSH - Clinical Voice Intake</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex font-sans">
+
+  <!-- Left Sidebar Navigation -->
+  <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between p-6">
+    <div>
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl bg-teal-500 flex items-center justify-center text-white text-xl">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight tracking-wider">AYUSH</h1>
+          <p class="text-xs text-slate-400" id="txt-subbrand">Digital Intake Platform</p>
+        </div>
+      </div>
+
+      <nav class="space-y-2">
+        <button onclick="switchTab('voice')" id="tab-btn-voice" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-600 text-white font-medium shadow-sm transition">
+          <i class="fa-solid fa-microphone"></i> <span id="nav-voice">Voice Intake</span>
+        </button>
+        <button onclick="switchTab('scan')" id="tab-btn-scan" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition">
+          <i class="fa-solid fa-file-medical"></i> <span id="nav-scan">Scan Documents</span>
+        </button>
+        <button onclick="switchTab('abha')" id="tab-btn-abha" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition">
+          <i class="fa-solid fa-id-card"></i> <span id="nav-abha">ABHA Records</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+      <p class="text-xs text-slate-400" id="txt-session-label">Current Session</p>
+      <p class="text-sm font-semibold text-white mt-1">Token #A-104</p>
+      <span class="inline-block mt-2 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-400">ABHA Linked</span>
+    </div>
+  </aside>
+
+  <!-- Main Content Viewport -->
+  <main class="flex-1 flex flex-col p-8 overflow-y-auto">
+    <!-- Top Header -->
+    <header class="flex justify-between items-center pb-6 border-b border-slate-200">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900" id="txt-header-title">AYUSH | Clinical Intake</h2>
+        <p class="text-sm text-slate-500" id="txt-header-sub">Dynamic Symptom Triage & Longitudinal Synthesis</p>
+      </div>
+
+      <!-- Hindi / English Switcher -->
+      <div class="flex items-center bg-slate-200 p-1 rounded-xl border border-slate-300">
+        <button id="btn-lang-en" onclick="setLanguage('en')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-teal-800 shadow-sm">English</button>
+        <button id="btn-lang-hi" onclick="setLanguage('hi')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900">हिन्दी</button>
+      </div>
+    </header>
+
+    <!-- Emergency Red-Flag Alert -->
+    <div id="emergencyBanner" class="hidden mt-4 p-4 rounded-xl bg-rose-600 text-white flex items-center gap-4 animate-pulse">
+      <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+      <div>
+        <h4 class="font-bold text-base" id="txt-alert-title">CRITICAL SYMPTOMS DETECTED!</h4>
+        <p class="text-sm text-rose-100" id="txt-alert-sub">Please proceed directly to Emergency/Casualty Room 102 immediately.</p>
+      </div>
+    </div>
+
+    <!-- TAB 1: DYNAMIC VOICE & TRIAGE INTAKE -->
+    <section id="section-voice" class="block space-y-6 mt-6">
+      <div class="grid grid-cols-3 gap-6">
+        
+        <!-- Left: Dynamic Questioning & Voice Panel (2 Columns) -->
+        <div class="col-span-2 space-y-6">
+          
+          <!-- Dynamic Question Card -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-teal-600 uppercase tracking-wider bg-teal-50 px-3 py-1 rounded-full" id="txt-badge">Symptom Interview</span>
+              <span id="txt-candidates-count" class="text-xs font-semibold text-slate-400">Evaluating 446 conditions...</span>
+            </div>
+
+            <h3 class="text-xl font-bold text-slate-800 mt-3" id="txt-primary-question">What problem brings you to the hospital today?</h3>
+            <p class="text-slate-500 text-sm mt-1" id="txt-sub-question">Speak naturally into the mic or tap the options below.</p>
+
+            <!-- Shortcuts for Initial Chief Complaint -->
+            <div id="initial-shortcuts" class="flex flex-wrap gap-2 mt-4">
+              <button onclick="recordInitialSymptom('fever')" class="px-3 py-1.5 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-medium border border-slate-200 transition">Fever / बुखार</button>
+              <button onclick="recordInitialSymptom('cough')" class="px-3 py-1.5 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-medium border border-slate-200 transition">Cough / खांसी</button>
+              <button onclick="recordInitialSymptom('joint_pain')" class="px-3 py-1.5 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-medium border border-slate-200 transition">Joint Pain / जोड़ों का दर्द</button>
+              <button onclick="recordInitialSymptom('fatigue')" class="px-3 py-1.5 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 rounded-lg text-xs font-medium border border-slate-200 transition">Fatigue / थकान</button>
+            </div>
+
+            <!-- Yes / No Quick Triage Response (Appears once dynamic loop begins) -->
+            <div id="triage-answers" class="hidden flex gap-3 mt-4">
+              <button onclick="respondTriage(true)" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow transition">
+                <i class="fa-solid fa-check mr-1"></i> <span id="btn-yes">Yes / हाँ</span>
+              </button>
+              <button onclick="respondTriage(false)" class="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold text-sm shadow transition">
+                <i class="fa-solid fa-xmark mr-1"></i> <span id="btn-no">No / नहीं</span>
+              </button>
+            </div>
+
+            <!-- Live Speech-to-Text Display Box -->
+            <div class="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <label class="text-xs font-semibold text-slate-400 block mb-1" id="txt-transcript-label">RECORDED SPEECH TRANSCRIPT (SARVAM AI):</label>
+              <p id="transcriptDisplay" class="text-base text-slate-700 italic font-medium">Click the microphone below and speak naturally...</p>
+            </div>
+          </div>
+
+          <!-- Mic Controller Bar -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <button id="micButton" class="w-16 h-16 rounded-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center text-xl shadow-md transition transform active:scale-95">
+                <i id="micIcon" class="fa-solid fa-microphone"></i>
+              </button>
+              <div>
+                <p id="micStatusText" class="font-bold text-slate-800">Tap to Speak</p>
+                <p class="text-xs text-slate-500" id="txt-supported-lang">Powered by Sarvam AI Engine</p>
+              </div>
+            </div>
+            <button onclick="switchTab('scan')" class="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm shadow">
+              <span id="txt-btn-next">Next: Documents</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Ayurvedic Profile & Differential Diagnosis (1 Column) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-seedling text-teal-600"></i> AYUSH Differential
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">AyurGenixAI Dataset Match</p>
+
+            <div class="space-y-3">
+              <div>
+                <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Confirmed Symptoms</label>
+                <div id="confirmedSymptomsList" class="flex flex-wrap gap-1">
+                  <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-xs">None added</span>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-slate-100">
+                <label class="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Probable Conditions</label>
+                <div id="probableDiseasesList" class="space-y-2 text-xs">
+                  <p class="text-slate-400 italic">Eliciting initial symptoms...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-100">
+            <p class="text-[11px] text-slate-400 leading-tight">
+              Dynamic questions narrow candidate pool using maximum entropy information gain.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: DOCUMENT SCAN & OCR DIGITIZATION -->
+    <section id="section-scan" class="hidden space-y-6 mt-6">
+      <div class="grid grid-cols-3 gap-6">
+        <div class="col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="text-lg font-bold text-slate-800">Scan or Upload Medical Documents</h3>
+          <p class="text-xs text-slate-500">Upload prior paper prescriptions or lab reports for clinical extraction.</p>
+          
+          <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="document.getElementById('docInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up text-3xl text-teal-600 mb-2"></i>
+            <p class="font-semibold text-sm text-slate-700">Click to upload prescription or diagnostic report</p>
+            <p class="text-xs text-slate-400 mt-1">Supports PNG, JPG, PDF</p>
+            <input type="file" id="docInput" class="hidden" accept="image/*,.pdf" onchange="uploadDocument(this.files[0])" />
+          </div>
+
+          <div id="ocrSpinner" class="hidden text-center py-4">
+            <i class="fa-solid fa-circle-notch fa-spin text-teal-600 text-2xl"></i>
+            <p class="text-xs font-semibold text-slate-600 mt-2">Processing Document OCR...</p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Extracted Document Text</h4>
+            <p id="ocrRawText" class="text-xs font-mono text-slate-700 whitespace-pre-wrap">No document uploaded yet.</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-900">Extracted Findings</h3>
+          <div>
+            <label class="text-xs text-slate-400 font-semibold uppercase">Suspected Diagnosis</label>
+            <div id="extractedDiagnoses" class="mt-1 flex flex-wrap gap-1">
+              <span class="px-2.5 py-1 bg-slate-100 rounded text-xs text-slate-500">Awaiting scan...</span>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-semibold uppercase">Abnormal Flags</label>
+            <div id="abnormalFlags" class="mt-1 space-y-1 text-xs text-rose-600 font-semibold">None detected.</div>
+          </div>
+          <button onclick="switchTab('abha')" class="w-full mt-6 py-3 bg-teal-700 hover:bg-teal-800 text-white rounded-xl font-bold text-xs shadow">
+            Next: Synthesize with ABHA Record <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: ABHA RECORDS -->
+    <section id="section-abha" class="hidden space-y-6 mt-6">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 text-xl font-bold">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900">Ayushman Bharat Digital Mission (ABDM) Integration</h3>
+            <p class="text-xs text-slate-500">Fetch longitudinal health records using patient ABHA ID</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="abhaInput" value="91-9876-5432-10" class="px-3 py-2 border border-slate-300 rounded-xl text-sm font-mono focus:outline-teal-600" />
+          <button onclick="fetchAbhaData()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow">
+            Fetch ABHA <i class="fa-solid fa-rotate ml-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-6">
+        <div class="col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h4 class="font-bold text-slate-800">Historical Health Record (ABHA HIP Link)</h4>
+          <div class="grid grid-cols-2 gap-4 text-xs">
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-400 block mb-1 uppercase font-semibold">Chronic Conditions</span>
+              <ul id="abhaConditions" class="font-semibold text-slate-800 space-y-1">
+                <li>• Type 2 Diabetes Mellitus</li>
+                <li>• Hypertension</li>
+              </ul>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-400 block mb-1 uppercase font-semibold">Active Medications</span>
+              <ul id="abhaMeds" class="font-semibold text-slate-800 space-y-1">
+                <li>• Metformin 500mg BD</li>
+                <li>• Amlodipine 5mg OD</li>
+              </ul>
+            </div>
+          </div>
+
+          <h4 class="font-bold text-slate-800 pt-2">Recent Lab History</h4>
+          <table class="w-full text-xs text-left border border-slate-200 rounded-xl overflow-hidden">
+            <thead class="bg-slate-100 text-slate-600">
+              <tr>
+                <th class="p-2.5">Date</th>
+                <th class="p-2.5">Investigation</th>
+                <th class="p-2.5">Value</th>
+                <th class="p-2.5">Status</th>
+              </tr>
+            </thead>
+            <tbody id="abhaLabRows" class="divide-y divide-slate-200">
+              <tr>
+                <td class="p-2.5 text-slate-500">2026-05-12</td>
+                <td class="p-2.5 font-medium">HbA1c</td>
+                <td class="p-2.5 font-bold">7.8%</td>
+                <td class="p-2.5"><span class="px-2 py-0.5 rounded bg-rose-50 text-rose-600 font-bold">High</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="space-y-3">
+            <span class="text-[10px] font-bold tracking-wider px-2 py-1 rounded bg-teal-100 text-teal-800 uppercase">Doctor EMR Dispatch</span>
+            <h4 class="font-bold text-slate-900 text-sm">Compiled FHIR Intake Summary</h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Consolidates <strong>Voice Symptoms</strong> + <strong>Scanned Documents</strong> + <strong>ABHA History</strong> into a physician-ready draft before consultation.
+            </p>
+            <div class="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs space-y-1">
+              <p class="font-bold text-teal-900">ABDM FHIR Bundle Status:</p>
+              <p class="text-teal-800">• Encounter & Condition: Ready</p>
+              <p class="text-teal-800">• Ayush Dosha Profile: Attached</p>
+            </div>
+          </div>
+
+          <button onclick="commitToHIS()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs shadow mt-6">
+            Push To Doctor's Desk <i class="fa-solid fa-cloud-arrow-up ml-1"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- LANGUAGE DICTIONARY ---
+    let currentLang = "en";
+    const translations = {
+      en: {
+        subbrand: "Digital Intake Platform",
+        navVoice: "Voice Intake",
+        navScan: "Scan Documents",
+        navAbha: "ABHA Records",
+        sessionLabel: "Current Session",
+        headerTitle: "AYUSH | Clinical Intake",
+        headerSub: "Dynamic Symptom Triage & Longitudinal Synthesis",
+        alertTitle: "CRITICAL SYMPTOMS DETECTED!",
+        alertSub: "Please proceed directly to Emergency/Casualty Room 102 immediately.",
+        badge: "Symptom Interview",
+        primaryQuestion: "What problem brings you to the hospital today?",
+        subQuestion: "Speak naturally into the mic or tap the options below.",
+        btnNext: "Next: Documents",
+        transcriptLabel: "RECORDED SPEECH TRANSCRIPT (SARVAM AI):",
+        micPlaceholder: "Click the microphone below and speak naturally...",
+        micTap: "Tap to Speak",
+        micListening: "Listening... Tap to Complete",
+        micProcessing: "Transcribing via Sarvam AI...",
+        btnYes: "Yes",
+        btnNo: "No"
+      },
+      hi: {
+        subbrand: "डिजिटल केस-टेकिंग प्लेटफॉर्म",
+        navVoice: "आवाज़ से विवरण",
+        navScan: "दस्तावेज़ स्कैन",
+        navAbha: "आभा रिकॉर्ड",
+        sessionLabel: "वर्तमान सत्र",
+        headerTitle: "AYUSH | रोगी विवरण एवं स्वास्थ्य परीक्षण",
+        headerSub: "लक्षण विश्लेषण एवं डिजिटल स्वास्थ्य समन्वय",
+        alertTitle: "आपातकालीन स्थिति पहचानी गई!",
+        alertSub: "कृपया तुरंत आपातकालीन कक्ष (कमरा 102) में जाएं। कतार में प्रतीक्षा न करें।",
+        badge: "लक्षण पूछताछ",
+        primaryQuestion: "आज आपको अस्पताल किस समस्या के कारण आना पड़ा?",
+        subQuestion: "माइक दबाकर अपनी परेशानी बताएं या नीचे दिए गए विकल्पों को चुनें।",
+        btnNext: "आगे बढ़ें: दस्तावेज़",
+        transcriptLabel: "रिकॉर्ड किया गया विवरण (सरवम एआई):",
+        micPlaceholder: "नीचे माइक बटन दबाएं और साफ आवाज़ में बोलें...",
+        micTap: "बोलने के लिए दबाएं",
+        micListening: "सुना जा रहा है... पूरा करने के लिए फिर दबाएं",
+        micProcessing: "पहचाना जा रहा है...",
+        btnYes: "हाँ",
+        btnNo: "नहीं"
+      }
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const t = translations[lang];
+
+      const btnEn = document.getElementById("btn-lang-en");
+      const btnHi = document.getElementById("btn-lang-hi");
+      if (lang === "en") {
+        btnEn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-teal-800 shadow-sm";
+        btnHi.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+      } else {
+        btnHi.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-teal-800 shadow-sm";
+        btnEn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+      }
+
+      document.getElementById("txt-subbrand").innerText = t.subbrand;
+      document.getElementById("nav-voice").innerText = t.navVoice;
+      document.getElementById("nav-scan").innerText = t.navScan;
+      document.getElementById("nav-abha").innerText = t.navAbha;
+      document.getElementById("txt-session-label").innerText = t.sessionLabel;
+      document.getElementById("txt-header-title").innerText = t.headerTitle;
+      document.getElementById("txt-header-sub").innerText = t.headerSub;
+      document.getElementById("txt-alert-title").innerText = t.alertTitle;
+      document.getElementById("txt-alert-sub").innerText = t.alertSub;
+      document.getElementById("txt-badge").innerText = t.badge;
+      document.getElementById("txt-btn-next").innerText = t.btnNext;
+      document.getElementById("txt-transcript-label").innerText = t.transcriptLabel;
+      document.getElementById("btn-yes").innerText = t.btnYes;
+      document.getElementById("btn-no").innerText = t.btnNo;
+      if (!isRecording) document.getElementById("micStatusText").innerText = t.micTap;
+    }
+
+    // --- DYNAMIC TRIAGE STATE MACHINE ---
+    let triageSession = {
+      positive_symptoms: [],
+      negative_symptoms: [],
+      current_factor: ""
+    };
+
+    function recordInitialSymptom(symptom) {
+      triageSession.positive_symptoms.push(symptom);
+      updateConfirmedSymptomsUI();
+      document.getElementById('initial-shortcuts').classList.add('hidden');
+      document.getElementById('triage-answers').classList.remove('hidden');
+      fetchNextQuestion();
+    }
+
+    async function respondTriage(answer) {
+      if (triageSession.current_factor) {
+        if (answer) {
+          triageSession.positive_symptoms.push(triageSession.current_factor);
+        } else {
+          triageSession.negative_symptoms.push(triageSession.current_factor);
+        }
+        updateConfirmedSymptomsUI();
+      }
+      await fetchNextQuestion();
+    }
+
+    async function fetchNextQuestion() {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/triage/next-step", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            positive_symptoms: triageSession.positive_symptoms,
+            negative_symptoms: triageSession.negative_symptoms
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.status === "question") {
+          triageSession.current_factor = data.factor_probe;
+          document.getElementById("txt-primary-question").innerText = data.question_en;
+          document.getElementById("txt-sub-question").innerText = data.question_hi;
+          document.getElementById("txt-candidates-count").innerText = `${data.remaining_diseases} conditions under review`;
+        } else if (data.status === "complete") {
+          document.getElementById("txt-primary-question").innerText = "Symptom Intake Complete!";
+          document.getElementById("txt-sub-question").innerText = "लक्षण विश्लेषण पूरा हो गया है।";
+          document.getElementById("triage-answers").classList.add("hidden");
+          document.getElementById("txt-candidates-count").innerText = "Differential Diagnosis Converged";
+          renderFinalProbableDiseases(data.probable_diseases);
+        }
+      } catch (err) {
+        console.error("Triage engine error:", err);
+      }
+    }
+
+    function updateConfirmedSymptomsUI() {
+      const container = document.getElementById("confirmedSymptomsList");
+      container.innerHTML = triageSession.positive_symptoms.map(s => `
+        <span class="px-2 py-0.5 bg-teal-50 text-teal-800 font-semibold rounded text-xs border border-teal-200">
+          • ${s.replace('_', ' ')}
+        </span>
+      `).join('');
+    }
+
+    function renderFinalProbableDiseases(diseases) {
+      const container = document.getElementById("probableDiseasesList");
+      container.innerHTML = diseases.map(d => {
+        if (typeof d === "object") {
+          return `
+            <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+              <p class="font-bold text-slate-800">${d.disease} <span class="text-slate-400 font-normal">(${d.hindi_name || ''})</span></p>
+              <p class="text-[11px] text-teal-700"><strong>Dosha:</strong> ${d.dosha || 'Tridosha'} | <strong>Prakriti:</strong> ${d.prakriti || 'Vata'}</p>
+              <p class="text-[11px] text-slate-500"><strong>Herbs:</strong> ${d.herbs || 'Tulsi, Giloy'}</p>
+            </div>
+          `;
+        } else {
+          return `<div class="p-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold text-slate-800">${d}</div>`;
+        }
+      }).join('');
+    }
+
+    // --- TAB SWITCHING ---
+    function switchTab(tabId) {
+      document.getElementById('section-voice').classList.add('hidden');
+      document.getElementById('section-scan').classList.add('hidden');
+      document.getElementById('section-abha').classList.add('hidden');
+
+      document.getElementById('tab-btn-voice').className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition";
+      document.getElementById('tab-btn-scan').className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition";
+      document.getElementById('tab-btn-abha').className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition";
+
+      if (tabId === 'voice') {
+        document.getElementById('section-voice').classList.remove('hidden');
+        document.getElementById('tab-btn-voice').className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-600 text-white font-medium shadow-sm transition";
+      } else if (tabId === 'scan') {
+        document.getElementById('section-scan').classList.remove('hidden');
+        document.getElementById('tab-btn-scan').className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-600 text-white font-medium shadow-sm transition";
+      } else if (tabId === 'abha') {
+        document.getElementById('section-abha').classList.remove('hidden');
+        document.getElementById('tab-btn-abha').className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-600 text-white font-medium shadow-sm transition";
+      }
+    }
+
+    // --- SARVAM VOICE RECORDING ---
+    let mediaRecorder, audioChunks = [], isRecording = false;
+    const micButton = document.getElementById("micButton");
+    const micIcon = document.getElementById("micIcon");
+    const micStatusText = document.getElementById("micStatusText");
+    const transcriptDisplay = document.getElementById("transcriptDisplay");
+    const emergencyBanner = document.getElementById("emergencyBanner");
+
+    micButton.addEventListener("click", async () => {
+      const t = translations[currentLang];
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            sendAudio(audioBlob);
+          };
+
+          mediaRecorder.start();
+          isRecording = true;
+          micButton.classList.replace("bg-teal-600", "bg-rose-600");
+          micIcon.className = "fa-solid fa-square";
+          micStatusText.innerText = t.micListening;
+        } catch (err) {
+          alert("Microphone access is required.");
+        }
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        micButton.classList.replace("bg-rose-600", "bg-teal-600");
+        micIcon.className = "fa-solid fa-microphone";
+        micStatusText.innerText = t.micProcessing;
+      }
+    });
+
+    async function sendAudio(blob) {
+  const t = translations[currentLang];
+  const formData = new FormData();
+  formData.append("file", blob, "voice.webm");
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/transcribe", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+      transcriptDisplay.innerText = data.transcript || "No speech detected.";
+      transcriptDisplay.classList.remove("italic");
+
+      if (data.is_emergency) {
+        emergencyBanner.classList.remove("hidden");
+        return;
+      }
+
+      // Add detected symptoms to state
+      if (data.detected_symptoms && data.detected_symptoms.length > 0) {
+        data.detected_symptoms.forEach(s => {
+          if (!triageSession.positive_symptoms.includes(s)) {
+            triageSession.positive_symptoms.push(s);
+          }
+        });
+        updateConfirmedSymptomsUI();
+      }
+
+      // If triage engine returned next step from dataset
+      if (data.triage_state) {
+        const state = data.triage_state;
+        if (state.status === "continue" && state.next_question_factor) {
+          triageSession.current_factor = state.next_question_factor;
+          
+          // Switch prompt to dynamic question
+          document.getElementById("txt-primary-question").innerText = 
+            `Along with this, are you experiencing ${state.next_question_factor.replace(/_/g, ' ')}?`;
+          document.getElementById("txt-sub-question").innerText = 
+            `क्या आपको इसके साथ ${state.next_question_factor.replace(/_/g, ' ')} की भी शिकायत है?`;
+          
+          // Show Yes/No action buttons
+          document.getElementById("initial-shortcuts").classList.add("hidden");
+          document.getElementById("triage-answers").classList.remove("hidden");
+          document.getElementById("txt-candidates-count").innerText = `${state.remaining_candidates_count} conditions remaining`;
+        } else if (state.status === "complete") {
+          renderFinalProbableDiseases(state.probable_diseases);
+        }
+      }
+    } else {
+      transcriptDisplay.innerText = "Error: " + data.message;
+    }
+  } catch (err) {
+    transcriptDisplay.innerText = "Failed to connect to backend on port 8000.";
+  } finally {
+    micStatusText.innerText = t.micTap;
+  }
+}
+
+    // --- DOCUMENT OCR & ABHA API CALLS ---
+    async function uploadDocument(file) {
+      if (!file) return;
+      const spinner = document.getElementById('ocrSpinner');
+      spinner.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/scan-document", {
+          method: "POST",
+          body: formData
+        });
+        const result = await res.json();
+
+        if (result.status === "success") {
+          document.getElementById('ocrRawText').innerText = result.raw_text;
+          const diagContainer = document.getElementById('extractedDiagnoses');
+          diagContainer.innerHTML = result.extracted_diagnoses.map(d => `<span class="px-2.5 py-1 bg-teal-50 text-teal-800 font-semibold rounded text-xs border border-teal-200">${d}</span>`).join('');
+          const flagsContainer = document.getElementById('abnormalFlags');
+          flagsContainer.innerHTML = result.abnormal_findings.map(f => `<div>• ${f}</div>`).join('');
+        }
+      } catch (e) {
+        alert("OCR Service Error.");
+      } finally {
+        spinner.classList.add('hidden');
+      }
+    }
+
+    async function fetchAbhaData() {
+      const id = document.getElementById('abhaInput').value;
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/abha/${encodeURIComponent(id)}`);
+        const json = await res.json();
+        const data = json.data;
+
+        document.getElementById('abhaConditions').innerHTML = data.chronic_conditions.map(c => `<li>• ${c}</li>`).join('');
+        document.getElementById('abhaMeds').innerHTML = data.current_medications.map(m => `<li>• ${m}</li>`).join('');
+        document.getElementById('abhaLabRows').innerHTML = data.recent_lab_records.map(r => `
+          <tr>
+            <td class="p-2.5 text-slate-500">${r.date}</td>
+            <td class="p-2.5 font-medium">${r.test}</td>
+            <td class="p-2.5 font-bold">${r.result}</td>
+            <td class="p-2.5"><span class="px-2 py-0.5 rounded ${r.flag === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'} font-bold">${r.flag}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        alert("Error fetching ABHA profile.");
+      }
+    }
+
+    function commitToHIS() {
+      alert("FHIR Intake Summary successfully pushed to Doctor OPD Desk #4!");
+    }
+  </script>
+</body>
+</html>
